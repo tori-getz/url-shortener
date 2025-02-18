@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/db:/data/postgres
+    ports:
+      - "5432:5432"
