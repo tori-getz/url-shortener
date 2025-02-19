@@ -4,21 +4,25 @@ import (
 	"fmt"
 	"net/http"
 	config "url-shortener/configs"
+	"url-shortener/internal/link"
 	"url-shortener/pkg/req"
 	"url-shortener/pkg/res"
 )
 
 type AuthHandlerDeps struct {
 	*config.Config
+	LinkRepository link.LinkRepository
 }
 
 type AuthHandler struct {
 	*config.Config
+	LinkRepository link.LinkRepository
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &AuthHandler{
-		Config: deps.Config,
+		Config:         deps.Config,
+		LinkRepository: deps.LinkRepository,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.Login())

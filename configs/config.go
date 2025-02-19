@@ -7,14 +7,21 @@ import (
 )
 
 type Config struct {
-	App  AppConfig
-	Db   DbConfig
-	Auth AuthConfig
+	App     AppConfig
+	Logging LoggingConfig
+	Db      DbConfig
+	Auth    AuthConfig
 }
 
 type AppConfig struct {
 	Addr string
+	Logs string
 }
+
+type LoggingConfig struct {
+	Mode string
+}
+
 type DbConfig struct {
 	Dsn string
 }
@@ -33,6 +40,9 @@ func LoadConfig() *Config {
 	return &Config{
 		App: AppConfig{
 			Addr: os.Getenv("APP_ADDR"),
+		},
+		Logging: LoggingConfig{
+			Mode: os.Getenv("LOGGING_MODE"),
 		},
 		Db: DbConfig{
 			Dsn: os.Getenv("DB_DSN"),

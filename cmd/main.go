@@ -7,26 +7,52 @@ import (
 	"url-shortener/internal/auth"
 	"url-shortener/internal/link"
 	"url-shortener/pkg/db"
+	"url-shortener/pkg/middleware"
+
+	"go.uber.org/zap"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 
-	_ = db.NewDb(*cfg)
+	db := db.NewDb(*cfg)
+
+	var logger *zap.Logger
+	var err error
+
+	if cfg.Logging.Mode == "production" {
+		logger, err = zap.NewProduction()
+	} else {
+		logger, err = zap.NewDevelopment()
+	}
+
+	if err != nil {
+		panic(err.Error())
+	}
 
 	router := http.NewServeMux()
+
+	// Repositories
+	linkRepository := link.NewLinkRepository(db)
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
 		Config: cfg,
 	})
-	link.NewLinkHandler(router)
+	link.NewLinkHandler(router, link.LinkHandlerDeps{
+		LinkRepository: linkRepository,
+	})
+
+	middlewareChain := middleware.Compose(
+		middleware.LoggingMiddleware(logger),
+	)
 
 	server := http.Server{
 		Addr:    cfg.App.Addr,
-		Handler: router,
+		Handler: middlewareChain(router),
 	}
 
-	fmt.Println("App listen at ", cfg.App.Addr)
+	listenStr := fmt.Sprintf("App listen at %v", cfg.App.Addr)
+	logger.Info(listenStr)
 	server.ListenAndServe()
 }
