@@ -12,11 +12,15 @@ func LoggingMiddleware(logger *zap.Logger) MiddlewareFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			// Выполняем обработчик
-			next.ServeHTTP(w, r)
+			wrapper := &WrapperWriter{
+				ResponseWriter: w,
+				StatusCode:     http.StatusOK,
+			}
 
-			// Логируем запрос
+			next.ServeHTTP(wrapper, r)
+
 			logger.Info("HTTP request",
+				zap.Int("status code", wrapper.StatusCode),
 				zap.String("method", r.Method),
 				zap.String("path", r.URL.Path),
 				zap.Duration("duration", time.Since(start)),

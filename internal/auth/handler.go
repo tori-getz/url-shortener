@@ -31,13 +31,11 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		payload, err := req.HandleBody[LoginRequest](w, r)
+		_, err := req.HandleBody[LoginRequest](w, r)
 		if err != nil {
 			res.Json(w, err.Error(), 400)
 			return
 		}
-
-		fmt.Println(payload)
 
 		response := LoginResponse{
 			Token: handler.Config.Auth.Secret,

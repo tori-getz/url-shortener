@@ -45,6 +45,7 @@ func main() {
 
 	middlewareChain := middleware.Compose(
 		middleware.LoggingMiddleware(logger),
+		middleware.CORS,
 	)
 
 	server := http.Server{
