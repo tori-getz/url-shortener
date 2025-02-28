@@ -1,20 +1,37 @@
 package middleware
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 	"strings"
+	"url-shortener/configs"
+	"url-shortener/pkg/jwt"
+	"url-shortener/pkg/res"
 )
 
-func IsAuthed(next http.Handler) http.Handler {
+const ErrUnauthorized = "UNAUTHORIZED"
+
+type emailKey string
+
+const (
+	ContextEmailKey = "ContextEmailKey"
+)
+
+func IsAuthed(next http.Handler, config *configs.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader := r.Header.Get("Authorization")
 		jwtToken := strings.TrimPrefix(authorizationHeader, "Bearer ")
 
-		if jwtToken != "" {
-			fmt.Println("JWT Token", jwtToken)
+		isValid, payload := jwt.NewJwt(config.Auth.Secret).Parse(jwtToken)
+
+		if !isValid {
+			res.Error(w, ErrUnauthorized, http.StatusUnauthorized)
+			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), ContextEmailKey, payload.Email)
+		reqWithUser := r.WithContext(ctx)
+
+		next.ServeHTTP(w, reqWithUser)
 	})
 }

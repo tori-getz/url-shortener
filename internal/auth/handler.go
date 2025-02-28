@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 	config "url-shortener/configs"
+	"url-shortener/pkg/jwt"
 	"url-shortener/pkg/req"
 	"url-shortener/pkg/res"
 )
@@ -10,17 +11,20 @@ import (
 type AuthHandlerDeps struct {
 	*config.Config
 	*AuthService
+	*jwt.Jwt
 }
 
 type AuthHandler struct {
 	*config.Config
 	*AuthService
+	*jwt.Jwt
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &AuthHandler{
 		Config:      deps.Config,
 		AuthService: deps.AuthService,
+		Jwt:         deps.Jwt,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.Login())
@@ -37,14 +41,28 @@ func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 // @Router /auth/login [post]
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := req.HandleBody[LoginRequest](w, r)
+		payload, err := req.HandleBody[LoginRequest](w, r)
 		if err != nil {
-			res.Json(w, err.Error(), 400)
+			res.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		email, err := handler.AuthService.Login(payload.Email, payload.Password)
+		if err != nil {
+			res.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token, err := handler.Jwt.Create(jwt.JwtPayload{
+			Email: email,
+		})
+		if err != nil {
+			res.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		response := LoginResponse{
-			Token: handler.Config.Auth.Secret,
+			Token: token,
 		}
 
 		res.Json(w, response, 200)
@@ -63,14 +81,26 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[RegisterRequest](w, r)
 		if err != nil {
-			res.Json(w, err.Error(), 400)
+			res.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		email, err := handler.AuthService.Register(payload.Name, payload.Email, payload.Password)
+		if err != nil {
+			res.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token, err := handler.Jwt.Create(jwt.JwtPayload{
+			Email: email,
+		})
+		if err != nil {
+			res.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		res.Json(w, RegisterResponse{
-			Token: email,
+			Token: token,
 		}, http.StatusCreated)
 	}
 }

@@ -16,6 +16,30 @@ func NewLinkRepository(db *db.Db) *LinkRepository {
 	}
 }
 
+func (repo *LinkRepository) GetCount() int64 {
+	var count int64
+
+	repo.Db.DB.
+		Table("links").
+		Count(&count)
+
+	return count
+}
+
+func (repo *LinkRepository) GetLinks(limit int, offset int) []Link {
+	var links []Link
+
+	repo.Db.DB.
+		Table("links").
+		Where("deleted_at is null").
+		Order("id asc").
+		Limit(limit).
+		Offset(offset).
+		Scan(&links)
+
+	return links
+}
+
 func (repo *LinkRepository) Create(link *Link) (*Link, error) {
 	result := repo.Db.DB.Create(link)
 

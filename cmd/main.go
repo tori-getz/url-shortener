@@ -8,6 +8,7 @@ import (
 	"url-shortener/internal/link"
 	"url-shortener/internal/user"
 	"url-shortener/pkg/db"
+	"url-shortener/pkg/jwt"
 	"url-shortener/pkg/middleware"
 
 	_ "url-shortener/docs"
@@ -54,10 +55,11 @@ func main() {
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config:      cfg,
 		AuthService: authService,
+		Jwt:         jwt.NewJwt(cfg.Auth.Secret),
 	})
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
+		Config:         cfg,
 		LinkRepository: linkRepository,
 	})
 
