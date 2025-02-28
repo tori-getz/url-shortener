@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	config "url-shortener/configs"
-	"url-shortener/internal/stat"
+	"url-shortener/pkg/event"
 	"url-shortener/pkg/middleware"
 	"url-shortener/pkg/req"
 	"url-shortener/pkg/res"
@@ -15,19 +15,19 @@ import (
 
 type LinkHandlerDeps struct {
 	*LinkRepository
-	*stat.StatRepository
+	*event.EventBus
 	*config.Config
 }
 
 type LinkHandler struct {
 	*LinkRepository
-	*stat.StatRepository
+	*event.EventBus
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
-		StatRepository: deps.StatRepository,
+		EventBus:       deps.EventBus,
 	}
 
 	router.Handle("GET /link", middleware.IsAuthed(handler.GetLinks(), deps.Config))
@@ -139,7 +139,12 @@ func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 			return
 		}
 
-		handler.StatRepository.AddClick(link.ID)
+		go handler.EventBus.Publish(event.Event{
+			Type: event.EventLinkVisited,
+			Payload: event.EventLinkVisitedPayload{
+				LinkId: link.ID,
+			},
+		})
 
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}
