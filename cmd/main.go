@@ -73,6 +73,10 @@ func main() {
 		LinkRepository: linkRepository,
 		EventBus:       eventBus,
 	})
+	stat.NewStatHandler(router, stat.StatHandlerDeps{
+		Config:         cfg,
+		StatRepository: statRepository,
+	})
 
 	middlewareChain := middleware.Compose(
 		middleware.LoggingMiddleware(logger),
