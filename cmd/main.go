@@ -6,6 +6,7 @@ import (
 	config "url-shortener/configs"
 	"url-shortener/internal/auth"
 	"url-shortener/internal/link"
+	"url-shortener/internal/stat"
 	"url-shortener/internal/user"
 	"url-shortener/pkg/db"
 	"url-shortener/pkg/event"
@@ -53,10 +54,14 @@ func main() {
 	// Repositories
 	linkRepository := link.NewLinkRepository(db)
 	userRepository := user.NewUserRepository(db)
-	// statRepository := stat.NewStatRepository(db)
+	statRepository := stat.NewStatRepository(db)
 
 	// services
 	authService := auth.NewAuthService(*userRepository)
+	statService := stat.NewStatService(stat.StatServiceDeps{
+		StatRepository: statRepository,
+		EventBus:       eventBus,
+	})
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
@@ -80,6 +85,8 @@ func main() {
 		Addr:    cfg.App.Addr,
 		Handler: middlewareChain(router),
 	}
+
+	go statService.AddClick()
 
 	listenStr := fmt.Sprintf("App listen at %v", cfg.App.Addr)
 	logger.Info(listenStr)
