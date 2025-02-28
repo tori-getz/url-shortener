@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	config "url-shortener/configs"
+	"url-shortener/internal/stat"
 	"url-shortener/pkg/middleware"
 	"url-shortener/pkg/req"
 	"url-shortener/pkg/res"
@@ -13,17 +14,20 @@ import (
 )
 
 type LinkHandlerDeps struct {
-	LinkRepository *LinkRepository
-	Config         *config.Config
+	*LinkRepository
+	*stat.StatRepository
+	*config.Config
 }
 
 type LinkHandler struct {
-	LinkRepository *LinkRepository
+	*LinkRepository
+	*stat.StatRepository
 }
 
 func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	handler := &LinkHandler{
 		LinkRepository: deps.LinkRepository,
+		StatRepository: deps.StatRepository,
 	}
 
 	router.Handle("GET /link", middleware.IsAuthed(handler.GetLinks(), deps.Config))
@@ -134,6 +138,8 @@ func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 			res.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+
+		handler.StatRepository.AddClick(link.ID)
 
 		http.Redirect(w, r, link.Url, http.StatusTemporaryRedirect)
 	}

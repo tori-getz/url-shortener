@@ -71,6 +71,15 @@ definitions:
     required:
     - url
     type: object
+  res.PaginationResponse-link_Link:
+    properties:
+      count:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/link.Link'
+        type: array
+    type: object
 host: localhost:3000
 info:
   contact:

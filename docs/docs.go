@@ -298,6 +298,20 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "res.PaginationResponse-link_Link": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/link.Link"
+                    }
+                }
+            }
         }
     }
 }`

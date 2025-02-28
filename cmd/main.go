@@ -6,6 +6,7 @@ import (
 	config "url-shortener/configs"
 	"url-shortener/internal/auth"
 	"url-shortener/internal/link"
+	"url-shortener/internal/stat"
 	"url-shortener/internal/user"
 	"url-shortener/pkg/db"
 	"url-shortener/pkg/jwt"
@@ -49,6 +50,7 @@ func main() {
 	// Repositories
 	linkRepository := link.NewLinkRepository(db)
 	userRepository := user.NewUserRepository(db)
+	statRepository := stat.NewStatRepository(db)
 
 	// services
 	authService := auth.NewAuthService(*userRepository)
@@ -61,6 +63,7 @@ func main() {
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		Config:         cfg,
 		LinkRepository: linkRepository,
+		StatRepository: statRepository,
 	})
 
 	middlewareChain := middleware.Compose(
