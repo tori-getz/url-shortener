@@ -28,6 +28,11 @@ import (
 
 // @host localhost:3000
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Введите "Bearer <токен>"
+
 func main() {
 	cfg := config.LoadConfig()
 

@@ -42,6 +42,7 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param limit query int true "Лимит (количество ссылок на странице)"
 // @Param offset query int true "Смещение (начальная позиция)"
 // @Success 200 {object} res.PaginationResponse[LinkResponse]
@@ -89,6 +90,7 @@ func (handler *LinkHandler) GetLinks() http.HandlerFunc {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param input body LinkCreateRequest true "Данные для создания ссылки"
 // @Success 201 {object} Link
 // @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"
@@ -163,6 +165,7 @@ func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Идентификатор ссылки (ID)"
 // @Param input body LinkUpdateRequest true "Данные для обновления ссылки"
 // @Success 200 {object} Link
@@ -215,6 +218,7 @@ func (handler *LinkHandler) UpdateLink() http.HandlerFunc {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Идентификатор ссылки (ID)"
 // @Success 200
 // @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"

@@ -89,6 +89,11 @@ const docTemplate = `{
         },
         "/link": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Получает список коротких ссылок",
                 "consumes": [
                     "application/json"
@@ -138,6 +143,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Создает короткую ссылку",
                 "consumes": [
                     "application/json"
@@ -184,6 +194,11 @@ const docTemplate = `{
         },
         "/link/{hash}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Удаляет короткую ссылку",
                 "consumes": [
                     "application/json"
@@ -231,6 +246,11 @@ const docTemplate = `{
         },
         "/link/{id}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Обновляет короткую ссылку",
                 "consumes": [
                     "application/json"
@@ -278,6 +298,11 @@ const docTemplate = `{
         },
         "/stat": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Возвращает статистику за указанный период, сгруппированную по дням или месяцам.",
                 "consumes": [
                     "application/json"
@@ -552,6 +577,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Введите \"Bearer \u003cтокен\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

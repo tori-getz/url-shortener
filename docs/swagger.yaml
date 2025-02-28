@@ -224,6 +224,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/res.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Получение списка коротких ссылок
       tags:
       - Link
@@ -253,6 +255,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/res.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Создание короткой ссылки
       tags:
       - Link
@@ -284,6 +288,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/res.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Удаление короткой ссылки
       tags:
       - Link
@@ -315,6 +321,8 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/res.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Обновление короткой ссылки
       tags:
       - Link
@@ -356,7 +364,15 @@ paths:
           description: Внутренняя ошибка сервера
           schema:
             $ref: '#/definitions/res.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Получить статистику
       tags:
       - Stats
+securityDefinitions:
+  BearerAuth:
+    description: Введите "Bearer <токен>"
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

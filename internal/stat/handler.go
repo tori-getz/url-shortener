@@ -31,6 +31,7 @@ func NewStatHandler(router *http.ServeMux, deps StatHandlerDeps) {
 // @Tags Stats
 // @Accept  json
 // @Produce  json
+// @Security BearerAuth
 // @Param from query string true "Начальная дата в формате YYYY-MM-DD"
 // @Param to query string true "Конечная дата в формате YYYY-MM-DD"
 // @Param by query string true "Группировка: day (по дням) или month (по месяцам)"
