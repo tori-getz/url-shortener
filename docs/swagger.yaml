@@ -50,6 +50,10 @@ definitions:
         type: string
       id:
         type: integer
+      stats:
+        items:
+          $ref: '#/definitions/stat.Stat'
+        type: array
       updatedAt:
         type: string
       url:
@@ -62,6 +66,19 @@ definitions:
     required:
     - url
     type: object
+  link.LinkResponse:
+    properties:
+      createdAt:
+        type: string
+      hash:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
   link.LinkUpdateRequest:
     properties:
       hash:
@@ -71,14 +88,38 @@ definitions:
     required:
     - url
     type: object
-  res.PaginationResponse-link_Link:
+  res.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  res.PaginationResponse-link_LinkResponse:
     properties:
       count:
         type: integer
       items:
         items:
-          $ref: '#/definitions/link.Link'
+          $ref: '#/definitions/link.LinkResponse'
         type: array
+    type: object
+  stat.Stat:
+    properties:
+      clicks:
+        type: integer
+      createdAt:
+        type: string
+      date:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      link_id:
+        type: integer
+      updatedAt:
+        type: string
     type: object
 host: localhost:3000
 info:
@@ -92,9 +133,19 @@ paths:
   /{hash}:
     get:
       description: Переходит по короткой ссылке
+      parameters:
+      - description: Хеш ссылки (Hash)
+        in: path
+        name: hash
+        required: true
+        type: integer
       responses:
-        "200":
-          description: OK
+        "307":
+          description: Temporary Redirect
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
       summary: Переход по короткой ссылке
       tags:
       - Link
@@ -143,6 +194,39 @@ paths:
       tags:
       - Auth
   /link:
+    get:
+      consumes:
+      - application/json
+      description: Получает список коротких ссылок
+      parameters:
+      - description: Лимит (количество ссылок на странице)
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: Смещение (начальная позиция)
+        in: query
+        name: offset
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/res.PaginationResponse-link_LinkResponse'
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+      summary: Получение списка коротких ссылок
+      tags:
+      - Link
     post:
       consumes:
       - application/json
@@ -161,6 +245,14 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/link.Link'
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
       summary: Создание короткой ссылки
       tags:
       - Link
@@ -169,19 +261,43 @@ paths:
       consumes:
       - application/json
       description: Удаляет короткую ссылку
+      parameters:
+      - description: Идентификатор ссылки (ID)
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+        "404":
+          description: Ссылка не найдена
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
       summary: Удаление короткой ссылки
       tags:
       - Link
+  /link/{id}:
     put:
       consumes:
       - application/json
       description: Обновляет короткую ссылку
       parameters:
+      - description: Идентификатор ссылки (ID)
+        in: path
+        name: id
+        required: true
+        type: integer
       - description: Данные для обновления ссылки
         in: body
         name: input
@@ -195,7 +311,52 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/link.Link'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
       summary: Обновление короткой ссылки
       tags:
       - Link
+  /stat:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает статистику за указанный период, сгруппированную по дням
+        или месяцам.
+      parameters:
+      - description: Начальная дата в формате YYYY-MM-DD
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Конечная дата в формате YYYY-MM-DD
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: 'Группировка: day (по дням) или month (по месяцам)'
+        in: query
+        name: by
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статистика
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/res.ErrorResponse'
+      summary: Получить статистику
+      tags:
+      - Stats
 swagger: "2.0"

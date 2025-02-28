@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	App     AppConfig
+	Docs    DocsConfig
 	Logging LoggingConfig
 	Db      DbConfig
 	Auth    AuthConfig
@@ -16,6 +17,11 @@ type Config struct {
 type AppConfig struct {
 	Addr string
 	Logs string
+}
+
+type DocsConfig struct {
+	Route   string
+	Enabled bool
 }
 
 type LoggingConfig struct {
@@ -41,9 +47,14 @@ func LoadConfig() *Config {
 		App: AppConfig{
 			Addr: os.Getenv("APP_ADDR"),
 		},
+		Docs: DocsConfig{
+			Route:   os.Getenv("DOCS_ROUTE"),
+			Enabled: os.Getenv("DOCS_ENABLED") == "true",
+		},
 		Logging: LoggingConfig{
 			Mode: os.Getenv("LOGGING_MODE"),
 		},
+
 		Db: DbConfig{
 			Dsn: os.Getenv("DB_DSN"),
 		},

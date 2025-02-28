@@ -42,8 +42,12 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 // @Tags Link
 // @Accept json
 // @Produce json
-// @Success 200 {object} res.PaginationResponse[Link]
-// @Router /link [post]
+// @Param limit query int true "Лимит (количество ссылок на странице)"
+// @Param offset query int true "Смещение (начальная позиция)"
+// @Success 200 {object} res.PaginationResponse[LinkResponse]
+// @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /link [get]
 func (handler *LinkHandler) GetLinks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -87,6 +91,8 @@ func (handler *LinkHandler) GetLinks() http.HandlerFunc {
 // @Produce json
 // @Param input body LinkCreateRequest true "Данные для создания ссылки"
 // @Success 201 {object} Link
+// @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /link [post]
 func (handler *LinkHandler) CreateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +133,9 @@ func (handler *LinkHandler) CreateLink() http.HandlerFunc {
 // @Summary Переход по короткой ссылке
 // @Description Переходит по короткой ссылке
 // @Tags Link
-// @Success 200
+// @Param hash path int true "Хеш ссылки (Hash)"
+// @Success 307
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /{hash} [get]
 func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -155,9 +163,11 @@ func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Param id path int true "Идентификатор ссылки (ID)"
 // @Param input body LinkUpdateRequest true "Данные для обновления ссылки"
 // @Success 200 {object} Link
-// @Router /link/{hash} [put]
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /link/{id} [put]
 func (handler *LinkHandler) UpdateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, ok := r.Context().Value(middleware.ContextEmailKey).(string)
@@ -205,7 +215,11 @@ func (handler *LinkHandler) UpdateLink() http.HandlerFunc {
 // @Tags Link
 // @Accept json
 // @Produce json
+// @Param id path int true "Идентификатор ссылки (ID)"
 // @Success 200
+// @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"
+// @Failure 404 {object} res.ErrorResponse "Ссылка не найдена"
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
 // @Router /link/{hash} [delete]
 func (handler *LinkHandler) DeleteLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

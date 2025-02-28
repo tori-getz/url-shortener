@@ -26,6 +26,18 @@ func NewStatHandler(router *http.ServeMux, deps StatHandlerDeps) {
 	router.Handle("GET /stat", middleware.IsAuthed(handler.GetStat(), deps.Config))
 }
 
+// @Summary Получить статистику
+// @Description Возвращает статистику за указанный период, сгруппированную по дням или месяцам.
+// @Tags Stats
+// @Accept  json
+// @Produce  json
+// @Param from query string true "Начальная дата в формате YYYY-MM-DD"
+// @Param to query string true "Конечная дата в формате YYYY-MM-DD"
+// @Param by query string true "Группировка: day (по дням) или month (по месяцам)"
+// @Success 200 {object} map[string]interface{} "Статистика"
+// @Failure 400 {object} res.ErrorResponse "Неверные параметры запроса"
+// @Failure 500 {object} res.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /stat [get]
 func (handler *StatHandler) GetStat() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		from, err := time.Parse("2006-01-02", r.URL.Query().Get("from"))

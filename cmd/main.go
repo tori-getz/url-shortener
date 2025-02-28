@@ -83,7 +83,9 @@ func main() {
 		middleware.CORS,
 	)
 
-	router.Handle("/docs/", httpSwagger.WrapHandler)
+	if cfg.Docs.Enabled {
+		router.Handle(cfg.Docs.Route, httpSwagger.WrapHandler)
+	}
 
 	server := http.Server{
 		Addr:    cfg.App.Addr,

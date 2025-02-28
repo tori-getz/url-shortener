@@ -88,6 +88,55 @@ const docTemplate = `{
             }
         },
         "/link": {
+            "get": {
+                "description": "Получает список коротких ссылок",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Link"
+                ],
+                "summary": "Получение списка коротких ссылок",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Лимит (количество ссылок на странице)",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение (начальная позиция)",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/res.PaginationResponse-link_LinkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Создает короткую ссылку",
                 "consumes": [
@@ -117,11 +166,70 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/link.Link"
                         }
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
                     }
                 }
             }
         },
         "/link/{hash}": {
+            "delete": {
+                "description": "Удаляет короткую ссылку",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Link"
+                ],
+                "summary": "Удаление короткой ссылки",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор ссылки (ID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Ссылка не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/link/{id}": {
             "put": {
                 "description": "Обновляет короткую ссылку",
                 "consumes": [
@@ -135,6 +243,13 @@ const docTemplate = `{
                 ],
                 "summary": "Обновление короткой ссылки",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор ссылки (ID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Данные для обновления ссылки",
                         "name": "input",
@@ -151,11 +266,19 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/link.Link"
                         }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
                     }
                 }
-            },
-            "delete": {
-                "description": "Удаляет короткую ссылку",
+            }
+        },
+        "/stat": {
+            "get": {
+                "description": "Возвращает статистику за указанный период, сгруппированную по дням или месяцам.",
                 "consumes": [
                     "application/json"
                 ],
@@ -163,12 +286,51 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Link"
+                    "Stats"
                 ],
-                "summary": "Удаление короткой ссылки",
+                "summary": "Получить статистику",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Начальная дата в формате YYYY-MM-DD",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Конечная дата в формате YYYY-MM-DD",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Группировка: day (по дням) или month (по месяцам)",
+                        "name": "by",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Статистика",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -180,9 +342,24 @@ const docTemplate = `{
                     "Link"
                 ],
                 "summary": "Переход по короткой ссылке",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Хеш ссылки (Hash)",
+                        "name": "hash",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "307": {
+                        "description": "Temporary Redirect"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/res.ErrorResponse"
+                        }
                     }
                 }
             }
@@ -266,6 +443,12 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "stats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/stat.Stat"
+                    }
+                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -285,6 +468,26 @@ const docTemplate = `{
                 }
             }
         },
+        "link.LinkResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "hash": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "link.LinkUpdateRequest": {
             "type": "object",
             "required": [
@@ -299,7 +502,18 @@ const docTemplate = `{
                 }
             }
         },
-        "res.PaginationResponse-link_Link": {
+        "res.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "res.PaginationResponse-link_LinkResponse": {
             "type": "object",
             "properties": {
                 "count": {
@@ -308,8 +522,34 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/link.Link"
+                        "$ref": "#/definitions/link.LinkResponse"
                     }
+                }
+            }
+        },
+        "stat.Stat": {
+            "type": "object",
+            "properties": {
+                "clicks": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "link_id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         }
