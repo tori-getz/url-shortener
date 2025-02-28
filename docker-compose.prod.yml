@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16.8-alpine3.21
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: links
+      PGDATA: /data/postgres
+    volumes:
+      - ./data/db:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d links"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  migrations:
+    image: golang:1.24-alpine
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "go run migrations/auto.go"
+    restart: on-failure
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - migrations
+    ports:
+      - '80:3000'

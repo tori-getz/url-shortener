@@ -37,11 +37,7 @@ type AuthConfig struct {
 }
 
 func LoadConfig() *Config {
-	err := godotenv.Load()
-
-	if err != nil {
-		panic("Unable to load .env")
-	}
+	godotenv.Load()
 
 	return &Config{
 		App: AppConfig{
