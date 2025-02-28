@@ -6,11 +6,24 @@ import (
 	config "url-shortener/configs"
 	"url-shortener/internal/auth"
 	"url-shortener/internal/link"
+	"url-shortener/internal/user"
 	"url-shortener/pkg/db"
 	"url-shortener/pkg/middleware"
 
+	_ "url-shortener/docs"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
+
+// @title URL Shortener API
+// @version 1.0
+
+// @contact.name Daniil Benger (tori-getz)
+// @contact.url http://t.me/torigetz/
+// @contact.email torigetz@yandex.ru
+
+// @host localhost:3000
 
 func main() {
 	cfg := config.LoadConfig()
@@ -34,10 +47,15 @@ func main() {
 
 	// Repositories
 	linkRepository := link.NewLinkRepository(db)
+	userRepository := user.NewUserRepository(db)
+
+	// services
+	authService := auth.NewAuthService(*userRepository)
 
 	// Handlers
 	auth.NewAuthHandler(router, auth.AuthHandlerDeps{
-		Config: cfg,
+		Config:      cfg,
+		AuthService: authService,
 	})
 	link.NewLinkHandler(router, link.LinkHandlerDeps{
 		LinkRepository: linkRepository,
@@ -47,6 +65,8 @@ func main() {
 		middleware.LoggingMiddleware(logger),
 		middleware.CORS,
 	)
+
+	router.Handle("/docs/", httpSwagger.WrapHandler)
 
 	server := http.Server{
 		Addr:    cfg.App.Addr,

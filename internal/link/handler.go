@@ -29,11 +29,19 @@ func NewLinkHandler(router *http.ServeMux, deps LinkHandlerDeps) {
 	router.Handle("DELETE /link/{id}", middleware.IsAuthed(handler.DeleteLink()))
 }
 
+// @Summary Создание короткой ссылки
+// @Description Создает короткую ссылку
+// @Tags Link
+// @Accept json
+// @Produce json
+// @Param input body LinkCreateRequest true "Данные для создания ссылки"
+// @Success 201 {object} Link
+// @Router /link [post]
 func (handler *LinkHandler) CreateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[LinkCreateRequest](w, r)
 		if err != nil {
-			res.Json(w, err.Error(), 400)
+			res.Json(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -55,10 +63,15 @@ func (handler *LinkHandler) CreateLink() http.HandlerFunc {
 			return
 		}
 
-		res.Json(w, createdLink, 201)
+		res.Json(w, createdLink, http.StatusCreated)
 	}
 }
 
+// @Summary Переход по короткой ссылке
+// @Description Переходит по короткой ссылке
+// @Tags Link
+// @Success 200
+// @Router /{hash} [get]
 func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		hash := r.PathValue("hash")
@@ -73,6 +86,14 @@ func (handler *LinkHandler) GoToLink() http.HandlerFunc {
 	}
 }
 
+// @Summary Обновление короткой ссылки
+// @Description Обновляет короткую ссылку
+// @Tags Link
+// @Accept json
+// @Produce json
+// @Param input body LinkUpdateRequest true "Данные для обновления ссылки"
+// @Success 200 {object} Link
+// @Router /link/{hash} [put]
 func (handler *LinkHandler) UpdateLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[LinkUpdateRequest](w, r)
@@ -102,6 +123,13 @@ func (handler *LinkHandler) UpdateLink() http.HandlerFunc {
 	}
 }
 
+// @Summary Удаление короткой ссылки
+// @Description Удаляет короткую ссылку
+// @Tags Link
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /link/{hash} [delete]
 func (handler *LinkHandler) DeleteLink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idString := r.PathValue("id")

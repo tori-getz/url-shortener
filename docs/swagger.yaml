@@ -1,0 +1,192 @@
+definitions:
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  auth.RegisterResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  link.Link:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      hash:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  link.LinkCreateRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  link.LinkUpdateRequest:
+    properties:
+      hash:
+        type: string
+      url:
+        type: string
+    required:
+    - url
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: torigetz@yandex.ru
+    name: Daniil Benger (tori-getz)
+    url: http://t.me/torigetz/
+  title: URL Shortener API
+  version: "1.0"
+paths:
+  /{hash}:
+    get:
+      description: Переходит по короткой ссылке
+      responses:
+        "200":
+          description: OK
+      summary: Переход по короткой ссылке
+      tags:
+      - Link
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя и возвращает токен
+      parameters:
+      - description: Данные для авторизации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      summary: Авторизация пользователя
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует пользователя и возвращает токен
+      parameters:
+      - description: Данные для авторизации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+  /link:
+    post:
+      consumes:
+      - application/json
+      description: Создает короткую ссылку
+      parameters:
+      - description: Данные для создания ссылки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/link.LinkCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/link.Link'
+      summary: Создание короткой ссылки
+      tags:
+      - Link
+  /link/{hash}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет короткую ссылку
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Удаление короткой ссылки
+      tags:
+      - Link
+    put:
+      consumes:
+      - application/json
+      description: Обновляет короткую ссылку
+      parameters:
+      - description: Данные для обновления ссылки
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/link.LinkUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/link.Link'
+      summary: Обновление короткой ссылки
+      tags:
+      - Link
+swagger: "2.0"

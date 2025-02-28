@@ -1,34 +1,40 @@
 package auth
 
 import (
-	"fmt"
 	"net/http"
 	config "url-shortener/configs"
-	"url-shortener/internal/link"
 	"url-shortener/pkg/req"
 	"url-shortener/pkg/res"
 )
 
 type AuthHandlerDeps struct {
 	*config.Config
-	LinkRepository link.LinkRepository
+	*AuthService
 }
 
 type AuthHandler struct {
 	*config.Config
-	LinkRepository link.LinkRepository
+	*AuthService
 }
 
 func NewAuthHandler(router *http.ServeMux, deps AuthHandlerDeps) {
 	handler := &AuthHandler{
-		Config:         deps.Config,
-		LinkRepository: deps.LinkRepository,
+		Config:      deps.Config,
+		AuthService: deps.AuthService,
 	}
 
 	router.HandleFunc("POST /auth/login", handler.Login())
 	router.HandleFunc("POST /auth/register", handler.Register())
 }
 
+// @Summary Авторизация пользователя
+// @Description Авторизует пользователя и возвращает токен
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param input body LoginRequest true "Данные для авторизации"
+// @Success 200 {object} LoginResponse
+// @Router /auth/login [post]
 func (handler *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := req.HandleBody[LoginRequest](w, r)
@@ -45,6 +51,14 @@ func (handler *AuthHandler) Login() http.HandlerFunc {
 	}
 }
 
+// @Summary Регистрация пользователя
+// @Description Регистрирует пользователя и возвращает токен
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param input body RegisterRequest true "Данные для авторизации"
+// @Success 201 {object} RegisterResponse
+// @Router /auth/register [post]
 func (handler *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		payload, err := req.HandleBody[RegisterRequest](w, r)
@@ -53,12 +67,10 @@ func (handler *AuthHandler) Register() http.HandlerFunc {
 			return
 		}
 
-		fmt.Println(payload)
+		email, err := handler.AuthService.Register(payload.Name, payload.Email, payload.Password)
 
-		response := RegisterResponse{
-			Name: payload.Name,
-		}
-
-		res.Json(w, response, 200)
+		res.Json(w, RegisterResponse{
+			Token: email,
+		}, http.StatusCreated)
 	}
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os/user"
 	config "url-shortener/configs"
 	"url-shortener/internal/link"
+	"url-shortener/internal/user"
 	"url-shortener/pkg/db"
 )
 
